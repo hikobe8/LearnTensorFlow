@@ -18,5 +18,34 @@ def basic_add_constant():
     print("常量2 + 常量3 = " + str(tf.Session().run(c1 + c2)))
 
 
+# 使用placeholder, 节省内存，按需加载
+def use_place_holder():
+    graph = tf.Graph()
+    with graph.as_default():
+        value1 = tf.placeholder(dtype=tf.float64)
+        value2 = tf.Variable([3, 4], dtype=tf.float64)
+        mul = value1 * value2
+
+    with tf.Session(graph=graph) as mySess:
+        tf.global_variables_initializer().run()
+        value = load_from_remote()
+        for partialValue in load_partial(value, 2):
+            runResult = mySess.run(mul, feed_dict={value1: partialValue})
+            print("乘法(value1, value2) = ", runResult)
+
+
+def load_from_remote():
+    return [-x for x in range(1000)]
+
+
+def load_partial(value, step):
+    index = 0
+    while index < len(value):
+        yield value[index:index + step]
+        index += step
+    return
+
+
 basic_add_variable()
 basic_add_constant()
+use_place_holder()
